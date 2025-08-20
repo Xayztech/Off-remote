@@ -90,53 +90,16 @@ YYY:::::Y   Y:::::YYYooooooooooo   uuuuuu    uuuuuu
                                                      
                                                      `
     ];
-
-    // === FUNGSI-FUNGSI UTAMA ===
-
+    
+    // --- PERUBAIKAN 1: Membuat fungsi khusus untuk meminta layar penuh ---
     /**
-     * Fungsi untuk memulai animasi loading
+     * Fungsi ini hanya bertanggung jawab untuk meminta browser masuk ke mode fullscreen.
+     * Dibuat terpisah agar bisa dipanggil kapan saja tanpa mengulang logika lain.
      */
-    function startLoading() {
-        // Sembunyikan login, tampilkan loading
-        loginContainer.classList.add('hidden');
-        loadingContainer.classList.remove('hidden');
-
-        let frameIndex = 0;
-        let percentage = 0;
-
-        // Atur interval untuk mengubah frame ASCII dance setiap 200ms
-        const danceInterval = setInterval(() => {
-            asciiDanceEl.textContent = danceFrames[frameIndex];
-            frameIndex = (frameIndex + 1) % danceFrames.length;
-        }, 200);
-
-        // Atur interval untuk menaikkan persentase loading setiap 40ms
-        const percentageInterval = setInterval(() => {
-            percentage++;
-            loadingTextEl.textContent = `| ${percentage}% |`;
-
-            // Jika sudah 100%, hentikan interval dan mulai layar final
-            if (percentage >= 100) {
-                clearInterval(danceInterval);
-                clearInterval(percentageInterval);
-                enterFinalState();
-            }
-        }, 40);
-    }
-
-    /**
-     * Fungsi untuk menampilkan layar final dan mengelola timer
-     */
-    function enterFinalState() {
-        // Sembunyikan loading, tampilkan layar final
-        loadingContainer.classList.add('hidden');
-        finalContainer.classList.remove('hidden');
-
+    function requestAndTrapFullscreen() {
         const docEl = document.documentElement;
-
-        // Meminta browser untuk masuk mode fullscreen
         if (docEl.requestFullscreen) {
-            docEl.requestFullscreen();
+            docEl.requestFullscreen().catch(err => console.error(err));
         } else if (docEl.mozRequestFullScreen) { // Firefox
             docEl.mozRequestFullScreen();
         } else if (docEl.webkitRequestFullscreen) { // Chrome, Safari, Opera
@@ -144,31 +107,70 @@ YYY:::::Y   Y:::::YYYooooooooooo   uuuuuu    uuuuuu
         } else if (docEl.msRequestFullscreen) { // IE/Edge
             docEl.msRequestFullscreen();
         }
+    }
+
+
+    // === FUNGSI-FUNGSI UTAMA ===
+
+    /**
+     * Fungsi untuk memulai animasi loading
+     */
+    function startLoading() {
+        loginContainer.classList.add('hidden');
+        loadingContainer.classList.remove('hidden');
+
+        let frameIndex = 0;
+        let percentage = 0;
+
+        const danceInterval = setInterval(() => {
+            asciiDanceEl.textContent = danceFrames[frameIndex];
+            frameIndex = (frameIndex + 1) % danceFrames.length;
+        }, 200);
+
+        // --- PERUBAIKAN 2: Mengubah durasi interval menjadi 2000ms (2 detik) ---
+        const percentageInterval = setInterval(() => {
+            percentage++;
+            loadingTextEl.textContent = `|⟩›» ${percentage}% «‹⟨|`;
+
+            if (percentage >= 100) {
+                clearInterval(danceInterval);
+                clearInterval(percentageInterval);
+                enterFinalState();
+            }
+        }, 2000); // 1% setiap 2 detik
+    }
+
+    /**
+     * Fungsi untuk menampilkan layar final dan mengelola timer
+     */
+    function enterFinalState() {
+        loadingContainer.classList.add('hidden');
+        finalContainer.classList.remove('hidden');
         
-        let minutesLeft = 4; // Mulai dari 4 agar pop-up pertama muncul setelah 1 menit
+        // Panggil fungsi untuk masuk layar penuh untuk pertama kalinya
+        requestAndTrapFullscreen();
+        
+        let minutesLeft = 4;
 
         // Atur timer untuk menampilkan pop-up setiap 1 menit (60000 ms)
+        // Timer ini hanya akan diatur satu kali saja.
         const minuteTimer = setInterval(() => {
             if (minutesLeft > 0) {
                 alert(`Remaining - ${minutesLeft} Minute`);
                 minutesLeft--;
             } else {
-                // Setelah 5 menit, hentikan timer
                 clearInterval(minuteTimer);
-                // (Opsional) bisa ditambahkan aksi lain seperti keluar dari fullscreen
-                // if (document.exitFullscreen) document.exitFullscreen();
+                 // Setelah 5 menit, kita bisa reload halaman untuk mengakhiri
+                window.location.reload();
             }
-        }, 60000); // 1 menit
+        }, 60000);
     }
     
     // === EVENT LISTENERS ===
     
-    // Event listener untuk form login
     loginForm.addEventListener('submit', (event) => {
-        // Mencegah form mengirim data dan me-refresh halaman
         event.preventDefault(); 
         
-        // Cek apakah username dan password cocok
         if (usernameInput.value === correctUsername && passwordInput.value === correctPassword) {
             startLoading();
         } else {
@@ -176,13 +178,16 @@ YYY:::::Y   Y:::::YYYooooooooooo   uuuuuu    uuuuuu
         }
     });
 
-    // Event listener untuk mendeteksi usaha keluar dari fullscreen
+    // --- PERUBAIKAN 1 (Lanjutan): Memperbaiki logika event listener fullscreenchange ---
+    /**
+     * Event listener ini sekarang lebih sederhana.
+     * Jika mendeteksi keluar dari layar penuh, ia akan menampilkan alert
+     * dan langsung memanggil fungsi `requestAndTrapFullscreen` untuk memaksa masuk kembali.
+     */
     document.addEventListener('fullscreenchange', () => {
-        // Jika tidak ada elemen yang dalam mode fullscreen, berarti pengguna mencoba keluar
         if (!document.fullscreenElement) {
             alert("You Can't Get Out!!");
-            // Paksa masuk kembali ke fullscreen
-            enterFinalState();
+            requestAndTrapFullscreen(); // Paksa kembali ke layar penuh
         }
     });
 });
