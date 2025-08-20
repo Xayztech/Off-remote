@@ -1,0 +1,72 @@
+/* Pengaturan dasar untuk seluruh halaman */
+body {
+    background-color: #000;
+    color: #fff;
+    font-family: 'Courier New', Courier, monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden; /* Mencegah scroll */
+}
+
+/* Wadah utama untuk konten di tengah layar */
+.container {
+    text-align: center;
+}
+
+/* Gaya untuk form login */
+#login-form label {
+    color: #00ff00; /* Warna hijau terang */
+    font-weight: bold;
+    font-size: 20px;
+}
+
+#login-form input {
+    background-color: #222;
+    border: 1px solid #00ff00;
+    color: #fff;
+    padding: 5px;
+    margin-bottom: 15px;
+}
+
+#login-form button {
+    background-color: #00ff00;
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Gaya untuk layar loading */
+#ascii-dance {
+    font-size: 24px;
+    color: #00ff00;
+}
+
+#loading-text {
+    font-size: 30px;
+    color: #fff;
+    font-weight: bold;
+}
+
+/* Gaya untuk pesan final */
+#final-message {
+    font-size: 54px;
+    font-weight: bold;
+    color: #ffff00; /* Warna kuning terang */
+    /* Efek bersinar menggunakan text-shadow */
+    text-shadow: 
+        0 0 10px #ffff00,
+        0 0 20px #ffff00,
+        0 0 30px #ffff00,
+        0 0 40px #ffdd00;
+}
+
+
+/* Class utility untuk menyembunyikan elemen */
+.hidden {
+    display: none;
+}
